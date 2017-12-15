@@ -10,7 +10,7 @@ const isToken = (key) => {
   return key.toLowerCase().indexOf('token') !== -1
 }
 
-async function conditionCircle (pluginConfig, args) {
+async function conditionCircle(pluginConfig, args, cb) {
   const options = args.options
   const branch = options.branch
 
@@ -22,15 +22,19 @@ async function conditionCircle (pluginConfig, args) {
   spawn.sync(script, [], { stdio: 'inherit' })
 
   if (!process.env.CIRCLECI) {
-    throw new SemanticReleaseError('Not running on Circle CI')
+    cb(SemanticReleaseError('Not running on Circle CI'));
+    return;
   }
 
   const envBranch = process.env.CIRCLE_BRANCH
   if (branch !== envBranch) {
-    throw new SemanticReleaseError(
+    cb(new SemanticReleaseError(
       `CircleCI using '${envBranch}' not configured publish branch (${branch})`
-    )
+    ));
+    return;
   }
+
+  cb(null);
 }
 
 module.exports = conditionCircle
